@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/senseit-logo-inverse.svg">
+    <img alt="senseIT" src="assets/logo/senseit-logo.svg" width="360">
+  </picture>
+</p>
+
 # quorum-sandbox
 
 ## Usage
