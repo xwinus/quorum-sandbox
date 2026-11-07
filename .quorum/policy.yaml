@@ -1,0 +1,31 @@
+providers:
+  allow:
+    - anthropic
+verification:
+  required_checks:
+    - name: sandbox-ci
+      kind: check
+      appId: 15368
+  acceptance:
+    repository:
+      host: github
+      hostName: github.com
+      owner: xwinus
+      name: quorum-sandbox-verifier
+      permanentId: "1449674275"
+    workflow: .github/workflows/quorum-verify.yml
+    ref: pilot-repeat-v1
+    commit: 9ce85d6cdf3ed2e732539d2de5d783cbbe6cb824
+    environment: sha256:bfe7ceb9f09ec0566c48fb93356e45a47a00be5a1dd14fa5b909e7709c66b034
+    specificationDigest: 47f31b90c4d6aabb4cc5b348650abd61cac84515229deb60d2492555ec0275c8
+    requirements:
+      - id: REQ-1
+        criterion: Repeat the literal greeting 1, 2, or 3 times, with an optional name.
+        kind: new-behavior
+      - id: REQ-2
+        criterion: Reject missing, non-canonical or out-of-range repeat counts and
+          excess names with exact usage output and exit 2.
+        kind: new-behavior
+      - id: REQ-3
+        criterion: Preserve existing positional greeting behavior.
+        kind: behavior-preserving

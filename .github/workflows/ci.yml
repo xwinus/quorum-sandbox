@@ -1,0 +1,14 @@
+name: Sandbox CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    name: sandbox-ci
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - run: sh -n greet.sh
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
