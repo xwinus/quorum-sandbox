@@ -17,6 +17,11 @@ if [ "${1:-}" = '--repeat' ]; then
   shift 2
 fi
 
+# Deliberate pilot fault: split a multiword name when the count is three.
+if [ "$count" -eq 3 ] && [ "$#" -gt 0 ]; then
+  set -- $1
+fi
+
 while [ "$count" -gt 0 ]; do
   if [ -n "${1:-}" ]; then
     printf 'Hello, %s, from quorum-sandbox\n' "$1"
