@@ -19,4 +19,6 @@ sh greet.sh Vaclav
 
 ## Greeting arguments
 
-Run `sh greet.sh --help` to display usage.
+`greet.sh` accepts one positional name. An empty name uses the default greeting.
+Names are literal: `sh greet.sh --help` prints `Hello, --help, from quorum-sandbox`;
+there is no option parser or help flag. Percent characters in names are literal too.
