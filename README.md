@@ -16,3 +16,7 @@ sh greet.sh
 sh greet.sh Vaclav
 # Hello, Vaclav, from quorum-sandbox
 ```
+
+## Greeting arguments
+
+Run `sh greet.sh --help` to display usage.
