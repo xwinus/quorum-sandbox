@@ -22,3 +22,9 @@ sh greet.sh --repeat 2 Vaclav
 ```
 
 `--repeat` must be the first argument and accepts only the counts 1, 2 or 3. An invalid count or more than one name prints the usage line to stderr and exits with code 2.
+
+## Greeting arguments
+
+`greet.sh` accepts one positional name. An empty name uses the default greeting.
+Apart from a leading `--repeat`, names are literal: `sh greet.sh --help` prints `Hello, --help, from quorum-sandbox`;
+there is no other option parser and no help flag. Percent characters in names are literal too.

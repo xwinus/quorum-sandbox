@@ -25,6 +25,9 @@ class GreetingTests(unittest.TestCase):
     def test_named_greeting(self):
         self.assert_greeting(['Ada'], 'Hello, Ada, from quorum-sandbox\n')
 
+    def test_option_like_name_is_literal(self):
+        self.assert_greeting(['--help'], 'Hello, --help, from quorum-sandbox\n')
+
     def test_empty_name_uses_default(self):
         self.assert_greeting([''], DEFAULT)
 
