@@ -27,7 +27,7 @@ class GreetFileTests(unittest.TestCase):
         path = self.write(data)
         result = self.run_script(str(path))
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.decode('utf-8'), expected)
+        self.assertEqual(result.stdout, expected.encode('utf-8'))
         self.assertEqual(result.stderr, b'')
         self.assertEqual(path.read_bytes(), data, 'input file must be unchanged')
 
@@ -51,9 +51,6 @@ class GreetFileTests(unittest.TestCase):
         self.assert_greeting('Zoë Ångström\n'.encode('utf-8'),
                              'Hello, Zoë Ångström, from quorum-sandbox\n')
 
-    def test_crlf_line_ending_is_stripped(self):
-        self.assert_greeting(b'Ada\r\nGrace\r\n', 'Hello, Ada, from quorum-sandbox\n')
-
     # Edge cases
 
     def test_empty_file_uses_default(self):
@@ -62,8 +59,19 @@ class GreetFileTests(unittest.TestCase):
     def test_empty_first_line_uses_default(self):
         self.assert_greeting(b'\nGrace\n', DEFAULT)
 
-    def test_empty_crlf_first_line_uses_default(self):
-        self.assert_greeting(b'\r\nGrace\r\n', DEFAULT)
+    # Only LF separates lines; a carriage return is name data.
+
+    def test_crlf_keeps_carriage_return_in_name(self):
+        self.assert_greeting(b'Ada\r\nGrace\r\n', 'Hello, Ada\r, from quorum-sandbox\n')
+
+    def test_lone_carriage_return_line_is_a_name(self):
+        self.assert_greeting(b'\r\nGrace\r\n', 'Hello, \r, from quorum-sandbox\n')
+
+    def test_carriage_return_at_end_of_file_is_kept(self):
+        self.assert_greeting(b'Ada\r', 'Hello, Ada\r, from quorum-sandbox\n')
+
+    def test_lone_carriage_return_at_end_of_file_is_a_name(self):
+        self.assert_greeting(b'\r', 'Hello, \r, from quorum-sandbox\n')
 
     def test_format_characters_and_backslashes_are_literal(self):
         self.assert_greeting(b'Ada %s \\n\n', 'Hello, Ada %s \\n, from quorum-sandbox\n')

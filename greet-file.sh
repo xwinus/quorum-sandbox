@@ -1,5 +1,6 @@
 #!/bin/sh
 # Print a greeting addressed to the first line of the file given as the only argument.
+# Only LF ends a line; every other byte, a carriage return included, is part of the name.
 # An empty file or an empty first line prints the default greeting.
 
 if [ "$#" -ne 1 ]; then
@@ -21,10 +22,6 @@ name=
   printf 'greet-file.sh: cannot read FILE: %s\n' "$file" >&2
   exit 1
 }
-
-# Drop the carriage return of a CRLF line ending.
-cr=$(printf '\r')
-name=${name%"$cr"}
 
 if [ -n "$name" ]; then
   printf 'Hello, %s, from quorum-sandbox\n' "$name"
