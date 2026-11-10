@@ -1,11 +1,28 @@
 #!/bin/sh
 # Print a greeting for every line of the file given as the only argument.
+# A sole argument `-` reads the names from standard input instead; use `./-` for a file named `-`.
 # Only LF ends a line; every other byte, a carriage return included, is part of the name.
 # A final line without LF is still greeted; an empty line prints the default greeting.
 
 if [ "$#" -ne 1 ]; then
   printf 'usage: greet-list.sh FILE\n' >&2
   exit 2
+fi
+
+greet_lines() {
+  # read fails at end of input, but still sets name to a final line without LF.
+  while IFS= read -r name || [ -n "$name" ]; do
+    if [ -n "$name" ]; then
+      printf 'Hello, %s, from quorum-sandbox\n' "$name"
+    else
+      printf 'Hello from quorum-sandbox\n'
+    fi
+  done
+}
+
+if [ "$1" = - ]; then
+  greet_lines
+  exit
 fi
 
 file=$1
@@ -20,14 +37,7 @@ fi
 opened=
 {
   opened=1
-  # read fails at end of file, but still sets name to a final line without LF.
-  while IFS= read -r name || [ -n "$name" ]; do
-    if [ -n "$name" ]; then
-      printf 'Hello, %s, from quorum-sandbox\n' "$name"
-    else
-      printf 'Hello from quorum-sandbox\n'
-    fi
-  done
+  greet_lines
 } 2>/dev/null <"$file"
 
 if [ -z "$opened" ]; then
