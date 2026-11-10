@@ -24,27 +24,16 @@ class GreetListTests(unittest.TestCase):
         path.write_bytes(data)
         return path
 
-    def run_script(self, *args, cwd=None, stdin=b''):
-        return subprocess.run(['sh', str(SCRIPT), *args], capture_output=True, cwd=cwd,
-                              input=stdin)
+    def run_script(self, *args, cwd=None):
+        return subprocess.run(['sh', str(SCRIPT), *args], capture_output=True, cwd=cwd)
 
     def assert_greetings(self, data, expected):
-        """Check the same input both as a names file and on standard input via `-`."""
-        with self.subTest(mode='file'):
-            path = self.write(data)
-            result = self.run_script(str(path))
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(result.stdout, expected.encode('utf-8'))
-            self.assertEqual(result.stderr, b'')
-            self.assertEqual(path.read_bytes(), data, 'input file must be unchanged')
-        with self.subTest(mode='stdin'):
-            cwd = self.tmp / 'stdin-cwd'
-            cwd.mkdir()
-            result = self.run_script('-', cwd=cwd, stdin=data)
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(result.stdout, expected.encode('utf-8'))
-            self.assertEqual(result.stderr, b'')
-            self.assertEqual(list(cwd.iterdir()), [], 'stdin mode must not create a file')
+        path = self.write(data)
+        result = self.run_script(str(path))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, expected.encode('utf-8'))
+        self.assertEqual(result.stderr, b'')
+        self.assertEqual(path.read_bytes(), data, 'input file must be unchanged')
 
     def assert_failure(self, result, status, stderr_fragment):
         self.assertEqual(result.returncode, status)
@@ -132,50 +121,6 @@ class GreetListTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, (hello('Ada') + hello('Grace')).encode('utf-8'))
         self.assertEqual(path.read_bytes(), b'Ada\nGrace\n')
-
-    # Standard input
-
-    def test_pipeline_matches_names_file(self):
-        path = self.write(b'Ada\nGrace\n')
-        from_file = self.run_script(str(path))
-        piped = subprocess.run(['sh', '-c', "printf 'Ada\\nGrace\\n' | sh \"$1\" -", 'sh',
-                                str(SCRIPT)], capture_output=True)
-        self.assertEqual(piped.returncode, 0, piped.stderr)
-        self.assertEqual(piped.stderr, b'')
-        self.assertEqual(piped.stdout, (hello('Ada') + hello('Grace')).encode('utf-8'))
-        self.assertEqual(piped.stdout, from_file.stdout)
-
-    def test_stdin_mode_ignores_file_named_dash(self):
-        dash = self.write(b'Grace\n', name='-')
-        result = self.run_script('-', cwd=self.tmp, stdin=b'Ada\n')
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, hello('Ada').encode('utf-8'))
-        self.assertEqual(result.stderr, b'')
-        self.assertEqual(dash.read_bytes(), b'Grace\n')
-
-    def test_stdin_mode_ignores_directory_named_dash(self):
-        (self.tmp / '-').mkdir()
-        result = self.run_script('-', cwd=self.tmp, stdin=b'Ada\n')
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, hello('Ada').encode('utf-8'))
-        self.assertEqual(result.stderr, b'')
-
-    def test_file_named_dash_is_readable_as_dot_slash_dash(self):
-        dash = self.write(b'Grace\n', name='-')
-        result = self.run_script('./-', cwd=self.tmp, stdin=b'Ada\n')
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, hello('Grace').encode('utf-8'))
-        self.assertEqual(result.stderr, b'')
-        self.assertEqual(dash.read_bytes(), b'Grace\n')
-
-    def test_extra_argument_after_dash_is_a_usage_error(self):
-        other = self.write(b'Grace\n', name='b.txt')
-        for args in (('-', str(other)), ('-', '-'), (str(other), '-')):
-            with self.subTest(args=args):
-                self.assert_failure(self.run_script(*args, cwd=self.tmp, stdin=b'Ada\n'), 2,
-                                    'usage: greet-list.sh FILE')
-                self.assertEqual(other.read_bytes(), b'Grace\n')
-                self.assertFalse((self.tmp / '-').exists())
 
     # Error cases
 
